@@ -1,0 +1,43 @@
+# FrickTrader Development Configuration
+# One file per feature: Development environment settings
+
+environment: development
+
+database:
+  url: "sqlite:///data/fricktrader_dev.db"
+  pool_size: 5
+  max_overflow: 10
+  echo: true  # Enable SQL logging in development
+
+exchange:
+  name: "binance"
+  sandbox: true  # Always use sandbox in development
+  rate_limit: 0.1
+  timeout: 30000
+
+dashboard:
+  host: "127.0.0.1"
+  port: 5001
+  debug: true  # Enable debug mode in development
+  secret_key: "dev-secret-key-change-in-production"
+  cors_enabled: true
+
+trading:
+  max_open_positions: 3
+  default_stake_amount: 100.0
+  risk_per_trade: 0.02  # 2% risk per trade
+  stop_loss_pct: 0.05   # 5% stop loss
+  take_profit_pct: 0.10 # 10% take profit
+
+cache:
+  enabled: true
+  ttl_seconds: 300  # 5 minutes
+  max_size: 1000
+  redis_url: null  # Use memory cache in development
+
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: "logs/fricktrader_dev.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5

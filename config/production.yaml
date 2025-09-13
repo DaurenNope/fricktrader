@@ -1,0 +1,43 @@
+# FrickTrader Production Configuration
+# One file per feature: Production environment settings
+
+environment: production
+
+database:
+  url: "postgresql://user:password@localhost:5432/fricktrader"
+  pool_size: 20
+  max_overflow: 30
+  echo: false  # Disable SQL logging in production
+
+exchange:
+  name: "binance"
+  sandbox: false  # Use live trading in production
+  rate_limit: 0.2  # More conservative rate limiting
+  timeout: 30000
+
+dashboard:
+  host: "0.0.0.0"  # Listen on all interfaces
+  port: 5001
+  debug: false  # Disable debug mode in production
+  secret_key: "${DASHBOARD_SECRET_KEY}"  # Must be set via environment
+  cors_enabled: false  # Disable CORS in production
+
+trading:
+  max_open_positions: 5
+  default_stake_amount: 1000.0  # Larger position sizes in production
+  risk_per_trade: 0.01  # 1% risk per trade (more conservative)
+  stop_loss_pct: 0.03   # 3% stop loss
+  take_profit_pct: 0.06 # 6% take profit
+
+cache:
+  enabled: true
+  ttl_seconds: 60   # 1 minute cache in production
+  max_size: 5000    # Larger cache
+  redis_url: "${REDIS_URL}"  # Use Redis in production
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: "logs/fricktrader.log"
+  max_bytes: 52428800  # 50MB
+  backup_count: 10

@@ -1,0 +1,271 @@
+<!-- Charts Tab -->
+<div class="space-y-8">
+    <!-- Chart Controls -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-chart-line mr-3 text-blue-400"></i>Trading Charts & Analysis
+        </h2>
+        
+        <!-- Chart Selection -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label class="block text-gray-400 text-sm font-medium mb-2">Trading Pair</label>
+                <select x-model="selectedChartPair" @change="loadChartData()" 
+                        class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-blue-500">
+                    <option value="">Select pair...</option>
+                    <template x-for="pair in whitelist" :key="pair">
+                        <option :value="pair" x-text="pair"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm font-medium mb-2">Timeframe</label>
+                <select x-model="selectedTimeframe" @change="loadChartData()"
+                        class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-blue-500">
+                    <option value="1m">1 Minute</option>
+                    <option value="5m">5 Minutes</option>
+                    <option value="15m">15 Minutes</option>
+                    <option value="1h" selected>1 Hour</option>
+                    <option value="4h">4 Hours</option>
+                    <option value="1d">1 Day</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm font-medium mb-2">Chart Type</label>
+                <select x-model="selectedChartType" @change="updateChartType()"
+                        class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-blue-500">
+                    <option value="candlesticks">Candlesticks</option>
+                    <option value="line">Line Chart</option>
+                    <option value="area">Area Chart</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button @click="loadChartData()" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+        
+        <!-- Technical Indicators Toggle -->
+        <div class="mb-6">
+            <h3 class="text-white font-semibold mb-3">Technical Indicators</h3>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <label class="flex items-center text-gray-300">
+                    <input type="checkbox" x-model="indicators.sma" @change="toggleIndicator('sma')" 
+                           class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <span class="text-sm">SMA (20)</span>
+                </label>
+                <label class="flex items-center text-gray-300">
+                    <input type="checkbox" x-model="indicators.ema" @change="toggleIndicator('ema')" 
+                           class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <span class="text-sm">EMA (20)</span>
+                </label>
+                <label class="flex items-center text-gray-300">
+                    <input type="checkbox" x-model="indicators.rsi" @change="toggleIndicator('rsi')" 
+                           class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <span class="text-sm">RSI (14)</span>
+                </label>
+                <label class="flex items-center text-gray-300">
+                    <input type="checkbox" x-model="indicators.macd" @change="toggleIndicator('macd')" 
+                           class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <span class="text-sm">MACD</span>
+                </label>
+                <label class="flex items-center text-gray-300">
+                    <input type="checkbox" x-model="indicators.bollinger" @change="toggleIndicator('bollinger')" 
+                           class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <span class="text-sm">Bollinger Bands</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Chart Display -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <h3 class="text-white font-semibold mb-4 flex items-center">
+            <i class="fas fa-chart-candlestick mr-2 text-green-400"></i>
+            <span x-text="selectedChartPair || 'Select Trading Pair'"></span>
+            <span class="text-gray-400 ml-2" x-show="selectedChartPair" x-text="'- ' + selectedTimeframe.toUpperCase()"></span>
+        </h3>
+        
+        <!-- Chart Container -->
+        <div id="tradingview-chart" class="w-full h-96 bg-gray-900 rounded-lg border border-gray-700 relative">
+            <div x-show="!selectedChartPair" class="absolute inset-0 flex items-center justify-center text-gray-500">
+                <div class="text-center">
+                    <i class="fas fa-chart-line text-4xl mb-3"></i>
+                    <p>Select a trading pair to view charts</p>
+                </div>
+            </div>
+            <div x-show="selectedChartPair && chartLoading" class="absolute inset-0 flex items-center justify-center text-blue-400">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading chart data...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chart Info Bar -->
+        <div x-show="selectedChartPair && chartData" class="mt-4 p-3 bg-gray-700 rounded-lg">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-400">Open:</span>
+                    <span class="text-white ml-2" x-text="chartData?.current?.open || '-'"></span>
+                </div>
+                <div>
+                    <span class="text-gray-400">High:</span>
+                    <span class="text-green-400 ml-2" x-text="chartData?.current?.high || '-'"></span>
+                </div>
+                <div>
+                    <span class="text-gray-400">Low:</span>
+                    <span class="text-red-400 ml-2" x-text="chartData?.current?.low || '-'"></span>
+                </div>
+                <div>
+                    <span class="text-gray-400">Close:</span>
+                    <span class="text-white ml-2" x-text="chartData?.current?.close || '-'"></span>
+                </div>
+                <div>
+                    <span class="text-gray-400">Volume:</span>
+                    <span class="text-blue-400 ml-2" x-text="chartData?.current?.volume || '-'"></span>
+                </div>
+                <div>
+                    <span class="text-gray-400">24h Change:</span>
+                    <span :class="(chartData?.current?.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'" 
+                          class="ml-2" x-text="(chartData?.current?.change || '0') + '%'"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Trade Signals Overlay -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Current Signals -->
+        <div class="bg-gray-800 p-6 rounded-xl card-hover">
+            <h3 class="text-white font-semibold mb-4 flex items-center">
+                <i class="fas fa-signal mr-2 text-yellow-400"></i>Current Signals
+            </h3>
+            <div class="space-y-3">
+                <template x-for="signal in currentSignals" :key="signal.id">
+                    <div class="p-3 rounded-lg" :class="signal.type === 'BUY' ? 'bg-green-900/30 border border-green-700' : 'bg-red-900/30 border border-red-700'">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium" :class="signal.type === 'BUY' ? 'text-green-400' : 'text-red-400'" 
+                                  x-text="signal.type"></span>
+                            <span class="text-xs text-gray-400" x-text="signal.confidence + '% confidence'"></span>
+                        </div>
+                        <div class="text-sm text-gray-300" x-text="signal.reason"></div>
+                        <div class="text-xs text-gray-500 mt-1" x-text="'Price: ' + signal.price"></div>
+                    </div>
+                </template>
+                <div x-show="currentSignals.length === 0" class="text-center text-gray-500 py-4">
+                    <i class="fas fa-search text-2xl mb-2"></i>
+                    <p>No active signals</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Support/Resistance Levels -->
+        <div class="bg-gray-800 p-6 rounded-xl card-hover">
+            <h3 class="text-white font-semibold mb-4 flex items-center">
+                <i class="fas fa-layer-group mr-2 text-purple-400"></i>Support & Resistance
+            </h3>
+            <div class="space-y-3">
+                <template x-for="level in supportResistanceLevels" :key="level.price">
+                    <div class="flex justify-between items-center p-2 rounded" 
+                         :class="level.type === 'resistance' ? 'bg-red-900/20' : 'bg-green-900/20'">
+                        <div>
+                            <span class="font-medium" :class="level.type === 'resistance' ? 'text-red-400' : 'text-green-400'" 
+                                  x-text="level.type.toUpperCase()"></span>
+                            <div class="text-xs text-gray-400" x-text="'Strength: ' + level.strength"></div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-white font-mono" x-text="level.price"></div>
+                            <div class="text-xs text-gray-400" x-text="level.distance"></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Recent Trades on Chart -->
+        <div class="bg-gray-800 p-6 rounded-xl card-hover">
+            <h3 class="text-white font-semibold mb-4 flex items-center">
+                <i class="fas fa-history mr-2 text-orange-400"></i>Recent Trades
+            </h3>
+            <div class="space-y-3 max-h-64 overflow-y-auto">
+                <template x-for="trade in recentChartTrades" :key="trade.id">
+                    <div class="p-3 rounded-lg bg-gray-700">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-medium" :class="trade.side === 'buy' ? 'text-green-400' : 'text-red-400'" 
+                                  x-text="trade.side.toUpperCase()"></span>
+                            <span class="text-xs text-gray-400" x-text="trade.date"></span>
+                        </div>
+                        <div class="text-sm text-gray-300">
+                            <span x-text="trade.pair"></span> @ <span x-text="trade.price"></span>
+                        </div>
+                        <div class="text-xs text-gray-500 flex justify-between">
+                            <span x-text="'Amount: ' + trade.amount"></span>
+                            <span x-text="'P&L: ' + trade.pnl" :class="parseFloat(trade.pnl) >= 0 ? 'text-green-400' : 'text-red-400'"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart Analysis Tools -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Volume Analysis -->
+        <div class="bg-gray-800 p-6 rounded-xl card-hover">
+            <h3 class="text-white font-semibold mb-4 flex items-center">
+                <i class="fas fa-bar-chart mr-2 text-cyan-400"></i>Volume Analysis
+            </h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-3 bg-gray-700 rounded">
+                        <div class="text-2xl font-bold text-cyan-400" x-text="volumeAnalysis?.current || '-'"></div>
+                        <div class="text-sm text-gray-400">Current Volume</div>
+                    </div>
+                    <div class="text-center p-3 bg-gray-700 rounded">
+                        <div class="text-2xl font-bold text-cyan-400" x-text="volumeAnalysis?.average || '-'"></div>
+                        <div class="text-sm text-gray-400">Avg Volume (24h)</div>
+                    </div>
+                </div>
+                <div class="p-3 bg-gray-700 rounded">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-400">Volume Trend</span>
+                        <span class="font-medium" :class="volumeAnalysis?.trend === 'increasing' ? 'text-green-400' : 'text-red-400'" 
+                              x-text="volumeAnalysis?.trend || 'neutral'"></span>
+                    </div>
+                    <div class="text-sm text-gray-300" x-text="volumeAnalysis?.analysis || 'Loading volume data...'"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pattern Recognition -->
+        <div class="bg-gray-800 p-6 rounded-xl card-hover">
+            <h3 class="text-white font-semibold mb-4 flex items-center">
+                <i class="fas fa-shapes mr-2 text-pink-400"></i>Pattern Recognition
+            </h3>
+            <div class="space-y-3">
+                <template x-for="pattern in detectedPatterns" :key="pattern.id">
+                    <div class="p-3 bg-gray-700 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium text-pink-400" x-text="pattern.name"></span>
+                            <span class="text-xs px-2 py-1 rounded" 
+                                  :class="pattern.reliability > 70 ? 'bg-green-900 text-green-400' : pattern.reliability > 50 ? 'bg-yellow-900 text-yellow-400' : 'bg-red-900 text-red-400'"
+                                  x-text="pattern.reliability + '% reliable'"></span>
+                        </div>
+                        <div class="text-sm text-gray-300 mb-1" x-text="pattern.description"></div>
+                        <div class="text-xs text-gray-500">
+                            <span x-text="'Target: ' + pattern.target"></span> | 
+                            <span x-text="'Stop: ' + pattern.stopLoss"></span>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="detectedPatterns.length === 0" class="text-center text-gray-500 py-4">
+                    <i class="fas fa-search text-xl mb-2"></i>
+                    <p>No patterns detected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

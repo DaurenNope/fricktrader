@@ -1,6 +1,52 @@
 // Professional Trading Dashboard JavaScript
 // Handles real-time data updates and TradingView charts
 
+// Toast notifications
+function ensureToastContainer() {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'fixed top-4 right-4 z-50 space-y-2';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function showToast(message, type = 'info') {
+    try {
+        const container = ensureToastContainer();
+        const toast = document.createElement('div');
+        const base = 'px-4 py-3 rounded-lg shadow-lg text-sm border';
+        const colors = {
+            info: 'bg-slate-800 text-slate-100 border-slate-700',
+            success: 'bg-emerald-900 text-emerald-100 border-emerald-700',
+            error: 'bg-red-900 text-red-100 border-red-700',
+            warning: 'bg-yellow-900 text-yellow-100 border-yellow-700'
+        };
+        toast.className = `${base} ${colors[type] || colors.info}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 300ms ease';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 320);
+        }, 3000);
+    } catch (_) {}
+}
+
+// Lightweight loading helpers
+function setSectionLoading(sectionEl, isLoading) {
+    if (!sectionEl) return;
+    if (isLoading) {
+        sectionEl.classList.add('opacity-70');
+        sectionEl.classList.add('pointer-events-none');
+    } else {
+        sectionEl.classList.remove('opacity-70');
+        sectionEl.classList.remove('pointer-events-none');
+    }
+}
+
 class TradingDashboard {
     constructor() {
         this.currentSymbol = 'BTC/USDT';
@@ -192,7 +238,9 @@ class TradingDashboard {
     }
     
     async updateAllData() {
+        const pageRoot = document.querySelector('.max-w-7xl') || document.body;
         try {
+            setSectionLoading(pageRoot, true);
             console.log(`🔄 Updating data for ${this.currentSymbol}`);
             
             // Update all dashboard sections with real data
@@ -213,7 +261,9 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('❌ Error updating dashboard data:', error);
-            this.showError('Failed to update dashboard data');
+            showToast('Failed to update dashboard data', 'error');
+        } finally {
+            setSectionLoading(pageRoot, false);
         }
     }
     
@@ -247,6 +297,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating social sentiment:', error);
+            showToast('Failed to load social sentiment', 'warning');
         }
     }
     
@@ -316,6 +367,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating followed traders:', error);
+            showToast('Failed to load followed traders', 'warning');
         }
     }
     
@@ -364,6 +416,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating recent signals:', error);
+            showToast('Failed to load recent signals', 'warning');
         }
     }
     
@@ -437,6 +490,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating smart money screener:', error);
+            showToast('Failed to load smart money screener', 'warning');
         }
     }
     
@@ -535,6 +589,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating trade logic:', error);
+            showToast('Failed to load trade logic', 'warning');
         }
     }
     
@@ -565,6 +620,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating market data:', error);
+            showToast('Failed to load market data', 'error');
             // TradingView chart will handle its own errors
         }
     }
@@ -810,6 +866,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating active trades:', error);
+            showToast('Failed to load active trades', 'warning');
         }
     }  
   
@@ -929,6 +986,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating pattern analysis:', error);
+            showToast('Failed to load pattern analysis', 'warning');
         }
     }
     
@@ -1030,6 +1088,7 @@ class TradingDashboard {
             
         } catch (error) {
             console.error('Error updating smart money analysis:', error);
+            showToast('Failed to load smart money analysis', 'warning');
         }
     }
     

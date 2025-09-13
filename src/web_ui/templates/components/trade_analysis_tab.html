@@ -1,0 +1,123 @@
+
+<!-- Trade Analysis Tab -->
+<div class="bg-gray-800 p-6 rounded-xl card-hover" x-data="tradeAnalysis()">
+    <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+        <i class="fas fa-search-dollar mr-3 text-cyan-400"></i>Trade Signal Analysis
+    </h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Column 1: Strategy State & Market Conditions -->
+        <div class="bg-gray-700 p-4 rounded-lg space-y-4">
+            <h3 class="text-white font-semibold border-b border-gray-600 pb-2">Strategy State</h3>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-400">Current Strategy:</span>
+                <span class="font-mono text-cyan-300" x-text="strategyState.current_strategy || 'Loading...'"></span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-400">Market Regime:</span>
+                <span class="font-bold" :class="{
+                    'text-green-400': strategyState.market_analysis?.selected_strategy === 'MOMENTUM',
+                    'text-yellow-400': strategyState.market_analysis?.selected_strategy === 'MEAN_REVERSION',
+                    'text-blue-400': strategyState.market_analysis?.selected_strategy === 'BREAKOUT'
+                }" x-text="strategyState.market_analysis?.selected_strategy || 'Loading...'"></span>
+            </div>
+            <p class="text-sm text-gray-400 pt-2" x-text="strategyState.market_analysis?.reasoning || 'Analyzing market conditions...'"></p>
+        </div>
+
+        <!-- Column 2: Live Indicator Values -->
+        <div class="bg-gray-700 p-4 rounded-lg lg:col-span-2">
+            <h3 class="text-white font-semibold border-b border-gray-600 pb-2 mb-3">Live Indicator Data (15m)</h3>
+            <div class="max-h-80 overflow-y-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-gray-400 text-sm">
+                            <th class="p-2">Pair</th>
+                            <th class="p-2">RSI</th>
+                            <th class="p-2">MACD</th>
+                            <th class="p-2">BB %</th>
+                            <th class="p-2">Volume Ratio</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-600">
+                        <template x-for="pair in Object.keys(indicators)" :key="pair">
+                            <tr class="font-mono text-sm">
+                                <td class="p-2 text-cyan-300" x-text="pair"></td>
+                                <td class="p-2" :class="getIndicatorClass(indicators[pair].rsi, 30, 70)" x-text="indicators[pair].rsi?.toFixed(1) || 'N/A'"></td>
+                                <td class="p-2" :class="{'text-green-400': indicators[pair].macd > indicators[pair].macd_signal, 'text-red-400': indicators[pair].macd < indicators[pair].macd_signal}" x-text="indicators[pair].macd?.toFixed(4) || 'N/A'"></td>
+                                <td class="p-2" :class="getIndicatorClass(indicators[pair].bb_position, 20, 80)" x-text="indicators[pair].bb_position?.toFixed(1) + '%' || 'N/A'"></td>
+                                <td class="p-2" :class="{'text-green-400': indicators[pair].volume_ratio > 1, 'text-red-400': indicators[pair].volume_ratio < 1}" x-text="indicators[pair].volume_ratio?.toFixed(2) || 'N/A'"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Column 3: Recent Decisions -->
+        <div class="bg-gray-700 p-4 rounded-lg lg:col-span-3">
+            <h3 class="text-white font-semibold border-b border-gray-600 pb-2 mb-3">Recent Trade Decisions</h3>
+            <div class="max-h-96 overflow-y-auto">
+                <template x-if="decisions.length === 0">
+                    <p class="text-gray-400 text-center p-4">No trade decisions recorded recently. Waiting for signals...</p>
+                </template>
+                <template x-for="decision in decisions" :key="decision.timestamp + decision.pair">
+                    <div class="p-3 rounded-lg mb-2" :class="decision.type === 'EXIT' ? 'bg-red-900/50' : 'bg-green-900/50'">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-4">
+                                <span class="font-bold text-lg" :class="decision.type === 'EXIT' ? 'text-red-400' : 'text-green-400'" x-text="decision.type"></span>
+                                <span class="font-mono text-cyan-300" x-text="decision.pair"></span>
+                                <span class="text-sm text-gray-400" x-text="new Date(decision.timestamp).toLocaleTimeString()"></span>
+                            </div>
+                            <div class="text-sm">
+                                <span class="text-gray-400">Strategy: </span>
+                                <span class="font-semibold text-white" x-text="decision.strategy"></span>
+                            </div>
+                        </div>
+                        <p class="mt-2 text-white" x-text="decision.reason"></p>
+                        <div class="mt-2 text-xs font-mono text-gray-300 flex space-x-4">
+                            <span>RSI: <span x-text="decision.details.rsi?.toFixed(1)"></span></span>
+                            <span>BB %: <span x-text="decision.details.bb_position?.toFixed(1)"></span></span>
+                            <span>Price: <span x-text="formatCurrency(decision.details.price)"></span></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function tradeAnalysis() {
+        return {
+            strategyState: {},
+            indicators: {},
+            decisions: [],
+            init() {
+                this.loadAnalysisData();
+                setInterval(() => this.loadAnalysisData(), 15000); // Refresh every 15 seconds
+            },
+            async loadAnalysisData() {
+                try {
+                    const [stateRes, indicatorsRes, decisionsRes] = await Promise.all([
+                        fetch('/api/trade-logic/strategy-state'),
+                        fetch('/api/trade-logic/indicators'),
+                        fetch('/api/trade-logic/decisions')
+                    ]);
+
+                    if (stateRes.ok) this.strategyState = await stateRes.json();
+                    if (indicatorsRes.ok) this.indicators = (await indicatorsRes.json()).indicators;
+                    if (decisionsRes.ok) this.decisions = (await decisionsRes.json()).decisions;
+                    
+                    console.log('✅ Trade analysis data updated');
+                } catch (error) {
+                    console.error('Error loading trade analysis data:', error);
+                }
+            },
+            getIndicatorClass(value, low, high) {
+                if (value < low) return 'text-green-400';
+                if (value > high) return 'text-red-400';
+                return 'text-white';
+            }
+        }
+    }
+</script>

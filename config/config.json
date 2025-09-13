@@ -84,17 +84,20 @@
     "verbosity": "error",
     "jwt_secret_key": "mvp-crypto-trading-secret-key-2024",
     "username": "freqtrade",
-    "password": "freqtrade"
+    "password": "freqtrade",
+    "CORS_origins": ["http://127.0.0.1:8080", "http://localhost:8080"],
+    "enable_openapi": true,
+    "ws_token": "freqtrade_ws_token"
   },
   
-  "bot_name": "MVP Crypto Trading Bot",
+  "bot_name": "ftbot",
   "initial_state": "running",
   "force_entry_enable": true,
   "internals": {
     "process_throttle_secs": 5
   },
   
-  "strategy": "MultiStrategy",
+  "strategy": "LiquiditySmartMoneyStrategy",
   "strategy_path": "user_data/strategies/",
   
   "db_url": "sqlite:///tradesv3.dryrun.sqlite"

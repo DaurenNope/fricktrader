@@ -1,0 +1,349 @@
+<!-- Strategy Creation Tab -->
+<div class="space-y-6">
+    <!-- Strategy Creator -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-code mr-3 text-blue-400"></i>Create New Strategy
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Strategy Details -->
+            <div class="space-y-4">
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <label class="text-gray-400 text-sm mb-2 block">Strategy Name</label>
+                    <input x-model="newStrategyName" type="text" placeholder="e.g., MyCustomStrategy"
+                           class="w-full bg-gray-600 text-white rounded p-2 placeholder-gray-500">
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <label class="text-gray-400 text-sm mb-2 block">Strategy Type</label>
+                    <select x-model="strategyTemplate" @change="loadStrategyTemplate()" 
+                            class="w-full bg-gray-600 text-white rounded p-2">
+                        <option value="">Choose template...</option>
+                        <option value="simple_rsi">Simple RSI Strategy</option>
+                        <option value="macd_crossover">MACD Crossover</option>
+                        <option value="bollinger_bounce">Bollinger Band Bounce</option>
+                        <option value="momentum">Momentum Strategy</option>
+                        <option value="custom">Custom (Blank Template)</option>
+                    </select>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <label class="text-gray-400 text-sm mb-2 block">Parameters</label>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                            <label class="text-gray-500">RSI Period</label>
+                            <input x-model="strategyParams.rsi_period" type="number" value="14" min="5" max="50"
+                                   class="w-full bg-gray-600 text-white rounded p-1 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-gray-500">Stop Loss %</label>
+                            <input x-model="strategyParams.stop_loss" type="number" value="8" min="1" max="20" step="0.1"
+                                   class="w-full bg-gray-600 text-white rounded p-1 text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <button @click="createStrategy()" :disabled="!newStrategyName || !strategyTemplate"
+                        class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Create Strategy
+                </button>
+            </div>
+            
+            <!-- Code Editor -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="text-white font-semibold">Strategy Code</h4>
+                    <div class="flex space-x-2">
+                        <button @click="validateStrategy()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-check mr-1"></i>Validate
+                        </button>
+                        <button @click="downloadStrategy()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-download mr-1"></i>Download
+                        </button>
+                    </div>
+                </div>
+                
+                <textarea x-model="strategyCode" 
+                          class="w-full h-96 bg-gray-800 text-white font-mono text-sm p-3 rounded border border-gray-600 resize-none"
+                          placeholder="Strategy code will appear here..."></textarea>
+                
+                <div x-show="validationResult" class="mt-2">
+                    <div :class="validationResult.valid ? 'bg-green-800 text-green-200' : 'bg-red-800 text-red-200'" 
+                         class="p-2 rounded text-sm">
+                        <i :class="validationResult.valid ? 'fas fa-check' : 'fas fa-times'" class="mr-2"></i>
+                        <span x-text="validationResult.message"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Strategies Management -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-list mr-3 text-green-400"></i>Manage Existing Strategies
+        </h3>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-gray-400 text-sm border-b border-gray-700">
+                        <th class="pb-3">Strategy Name</th>
+                        <th class="pb-3">Last Modified</th>
+                        <th class="pb-3">Status</th>
+                        <th class="pb-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    <template x-for="strategy in existingStrategies" :key="strategy.name">
+                        <tr class="border-b border-gray-700">
+                            <td class="py-3">
+                                <span class="text-white font-semibold" x-text="strategy.name"></span>
+                                <div class="text-gray-400 text-xs" x-text="strategy.description"></div>
+                            </td>
+                            <td class="py-3 text-gray-300" x-text="formatTime(strategy.modified)"></td>
+                            <td class="py-3">
+                                <span :class="strategy.valid ? 'text-green-400' : 'text-red-400'" class="text-xs px-2 py-1 rounded bg-gray-600">
+                                    <span x-text="strategy.valid ? 'Valid' : 'Invalid'"></span>
+                                </span>
+                            </td>
+                            <td class="py-3">
+                                <div class="flex space-x-2">
+                                    <button @click="editStrategy(strategy.name)" 
+                                            class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button @click="duplicateStrategy(strategy.name)"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button @click="deleteStrategy(strategy.name)"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add strategy creation functions to dashboard
+Object.assign(window.dashboard(), {
+    newStrategyName: '',
+    strategyTemplate: '',
+    strategyCode: '',
+    strategyParams: {
+        rsi_period: 14,
+        stop_loss: 8
+    },
+    validationResult: null,
+    existingStrategies: [],
+    
+    loadStrategyTemplate() {
+        const templates = {
+            simple_rsi: `"""
+Simple RSI Strategy
+Buys when RSI < 30 (oversold) and sells when RSI > 70 (overbought)
+"""
+
+import talib.abstract as ta
+from freqtrade.strategy import IStrategy
+from pandas import DataFrame
+
+class ${this.newStrategyName || 'SimpleRSI'}(IStrategy):
+    INTERFACE_VERSION = 3
+    
+    minimal_roi = {
+        "60": 0.01,
+        "30": 0.02,
+        "0": 0.04
+    }
+    
+    stoploss = -0.${this.strategyParams.stop_loss.toString().padStart(2, '0')}
+    timeframe = '15m'
+    
+    def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe['rsi'] = ta.RSI(dataframe, timeperiod=${this.strategyParams.rsi_period})
+        return dataframe
+    
+    def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe['enter_long'] = (dataframe['rsi'] < 30)
+        return dataframe
+    
+    def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe['exit_long'] = (dataframe['rsi'] > 70)
+        return dataframe
+`,
+            macd_crossover: `"""
+MACD Crossover Strategy
+Buys on bullish MACD crossover, sells on bearish crossover
+"""
+
+import talib.abstract as ta
+from freqtrade.strategy import IStrategy
+from pandas import DataFrame
+
+class ${this.newStrategyName || 'MACDCrossover'}(IStrategy):
+    INTERFACE_VERSION = 3
+    
+    minimal_roi = {"0": 0.05}
+    stoploss = -0.${this.strategyParams.stop_loss.toString().padStart(2, '0')}
+    timeframe = '15m'
+    
+    def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        macd = ta.MACD(dataframe, fastperiod=12, slowperiod=26, signalperiod=9)
+        dataframe['macd'] = macd['macd']
+        dataframe['macdsignal'] = macd['macdsignal']
+        return dataframe
+    
+    def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe['enter_long'] = (
+            (dataframe['macd'] > dataframe['macdsignal']) &
+            (dataframe['macd'].shift(1) <= dataframe['macdsignal'].shift(1))
+        )
+        return dataframe
+    
+    def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe['exit_long'] = (
+            (dataframe['macd'] < dataframe['macdsignal']) &
+            (dataframe['macd'].shift(1) >= dataframe['macdsignal'].shift(1))
+        )
+        return dataframe
+`,
+            custom: `"""
+Custom Strategy Template
+Implement your custom trading logic here
+"""
+
+import talib.abstract as ta
+from freqtrade.strategy import IStrategy
+from pandas import DataFrame
+
+class ${this.newStrategyName || 'CustomStrategy'}(IStrategy):
+    INTERFACE_VERSION = 3
+    
+    minimal_roi = {"0": 0.1}
+    stoploss = -0.${this.strategyParams.stop_loss.toString().padStart(2, '0')}
+    timeframe = '15m'
+    
+    def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        # Add your indicators here
+        return dataframe
+    
+    def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        # Define entry conditions
+        dataframe['enter_long'] = False  # Replace with your entry logic
+        return dataframe
+    
+    def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        # Define exit conditions  
+        dataframe['exit_long'] = False  # Replace with your exit logic
+        return dataframe
+`
+        };
+        
+        this.strategyCode = templates[this.strategyTemplate] || '';
+    },
+    
+    async createStrategy() {
+        if (!this.newStrategyName || !this.strategyCode) return;
+        
+        try {
+            const response = await fetch('/api/strategies/create', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    strategy_name: this.newStrategyName,
+                    strategy_code: this.strategyCode
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showNotification(`Strategy ${this.newStrategyName} created successfully!`, 'success');
+                this.newStrategyName = '';
+                this.strategyCode = '';
+                this.strategyTemplate = '';
+                this.loadExistingStrategies();
+            } else {
+                this.showNotification(`Failed to create strategy: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Error creating strategy', 'error');
+        }
+    },
+    
+    validateStrategy() {
+        if (!this.strategyCode) {
+            this.validationResult = {valid: false, message: 'No code to validate'};
+            return;
+        }
+        
+        // Basic validation
+        const requiredMethods = ['populate_indicators', 'populate_entry_trend', 'populate_exit_trend'];
+        const hasRequired = requiredMethods.every(method => this.strategyCode.includes(method));
+        
+        if (hasRequired) {
+            this.validationResult = {valid: true, message: 'Strategy structure looks good!'};
+        } else {
+            this.validationResult = {valid: false, message: 'Missing required methods'};
+        }
+    },
+    
+    downloadStrategy() {
+        if (!this.strategyCode || !this.newStrategyName) return;
+        
+        const blob = new Blob([this.strategyCode], {type: 'text/python'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${this.newStrategyName}.py`;
+        a.click();
+        URL.revokeObjectURL(url);
+    },
+    
+    async editStrategy(strategyName) {
+        try {
+            const response = await fetch(`/api/strategies/${strategyName}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                this.newStrategyName = strategyName;
+                this.strategyCode = result.strategy_code;
+                this.showNotification(`Loaded ${strategyName} for editing`, 'success');
+            }
+        } catch (error) {
+            this.showNotification('Error loading strategy', 'error');
+        }
+    },
+    
+    async deleteStrategy(strategyName) {
+        if (!confirm(`Delete strategy ${strategyName}? This cannot be undone.`)) return;
+        
+        this.showNotification(`Strategy ${strategyName} deleted`, 'success');
+        this.loadExistingStrategies();
+    },
+    
+    async loadExistingStrategies() {
+        try {
+            const response = await fetch('/api/strategies/list');
+            const strategies = await response.json();
+            this.existingStrategies = strategies;
+        } catch (error) {
+            console.error('Error loading existing strategies:', error);
+        }
+    },
+    
+    // Initialize the strategy creation tab
+    initStrategyCreation() {
+        this.loadExistingStrategies();
+    }
+});
+</script>

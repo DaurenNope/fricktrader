@@ -133,59 +133,57 @@ class MultiStrategy(IStrategy):
         return dataframe
     
     def momentum_entry(self, dataframe: DataFrame, pair: str) -> int:
-        """Momentum strategy entry logic"""
+        """Momentum strategy entry logic - FIXED: Simplified conditions"""
         condition = (
-            (dataframe['macd'] > dataframe['macdsignal']) &
-            (dataframe['macd'].shift(1) <= dataframe['macdsignal'].shift(1)) &
-            (dataframe['volume_ratio'] > 1.2) &
-            (dataframe['rsi'] > 40) & (dataframe['rsi'] < 70)
+            (dataframe['macd'] > dataframe['macdsignal']) &  # MACD bullish
+            (dataframe['rsi'] > 45) & (dataframe['rsi'] < 65) &  # RSI in reasonable range
+            (dataframe['volume_ratio'] > 1.1)  # Reduced volume requirement
         )
         
         if condition.iloc[-1]:
-            logger.info(f"🚀 MOMENTUM ENTRY for {pair}: MACD Bullish Crossover, "
+            logger.info(f"🚀 MOMENTUM ENTRY for {pair}: MACD Bullish, "
                        f"RSI={dataframe['rsi'].iloc[-1]:.1f}, Volume={dataframe['volume_ratio'].iloc[-1]:.1f}x")
             return 1
         return 0
     
     def mean_reversion_entry(self, dataframe: DataFrame, pair: str) -> int:
-        """Mean reversion strategy entry logic"""
+        """Mean reversion strategy entry logic - FIXED: More realistic conditions"""
         condition = (
-            (dataframe['rsi'] <= 30) &
-            (dataframe['close'] <= dataframe['bb_lower'] * 1.01) &
-            (dataframe['volatility'] > 0.01)
+            (dataframe['rsi'] <= 40) &  # Changed from 30 to 40 - less restrictive
+            (dataframe['close'] <= dataframe['bb_middle'] * 1.02) &  # Changed to middle band, not lower
+            (dataframe['volatility'] > 0.005)  # Reduced volatility requirement
         )
         
         if condition.iloc[-1]:
-            logger.info(f"📈 MEAN REVERSION ENTRY for {pair}: RSI Oversold={dataframe['rsi'].iloc[-1]:.1f}, "
-                       f"Near BB Lower, Volatility={dataframe['volatility'].iloc[-1]:.3f}")
+            logger.info(f"📈 MEAN REVERSION ENTRY for {pair}: RSI={dataframe['rsi'].iloc[-1]:.1f}, "
+                       f"Below BB Middle, Volatility={dataframe['volatility'].iloc[-1]:.3f}")
             return 1
         return 0
     
     def breakout_entry(self, dataframe: DataFrame, pair: str) -> int:
-        """Breakout strategy entry logic"""
+        """Breakout strategy entry logic - FIXED: Simplified conditions"""
         condition = (
-            (dataframe['close'] > dataframe['resistance'].shift(1)) &
-            (dataframe['close'].shift(1) <= dataframe['resistance'].shift(1)) &
-            (dataframe['volume_ratio'] >= 1.5)
+            (dataframe['close'] > dataframe['sma_20']) &  # Above moving average
+            (dataframe['rsi'] > 55) &  # Showing strength
+            (dataframe['volume_ratio'] > 1.2)  # Some volume increase
         )
         
         if condition.iloc[-1]:
-            logger.info(f"⚡ BREAKOUT ENTRY for {pair}: Price={dataframe['close'].iloc[-1]:.4f} "
-                       f"broke Resistance={dataframe['resistance'].iloc[-1]:.4f}, "
-                       f"Volume={dataframe['volume_ratio'].iloc[-1]:.1f}x")
+            logger.info(f"⚡ BREAKOUT ENTRY for {pair}: Price above SMA20, "
+                       f"RSI={dataframe['rsi'].iloc[-1]:.1f}, Volume={dataframe['volume_ratio'].iloc[-1]:.1f}x")
             return 1
         return 0
     
     def sample_entry(self, dataframe: DataFrame, pair: str) -> int:
-        """Default sample strategy entry logic"""
+        """Default sample strategy entry logic - FIXED: More active"""
         condition = (
-            (dataframe['rsi'] <= 35) &
-            (dataframe['volume'] > dataframe['volume_sma'])
+            (dataframe['rsi'] <= 45) &  # Changed from 35 to 45 - less restrictive
+            (dataframe['volume'] > dataframe['volume_sma'] * 0.8)  # Reduced volume requirement
         )
         
         if condition.iloc[-1]:
             logger.info(f"🎯 SAMPLE ENTRY for {pair}: RSI={dataframe['rsi'].iloc[-1]:.1f}, "
-                       f"Volume Above Average")
+                       f"Volume Above 80% Average")
             return 1
         return 0
     
@@ -202,14 +200,14 @@ class MultiStrategy(IStrategy):
         return 0
     
     def mean_reversion_exit(self, dataframe: DataFrame, pair: str) -> int:
-        """Mean reversion strategy exit logic"""
+        """Mean reversion strategy exit logic - BALANCED: Less aggressive"""
         condition = (
-            (dataframe['rsi'] >= 70) |
-            (dataframe['close'] >= dataframe['bb_upper'] * 0.99)
+            (dataframe['rsi'] >= 75) |  # Changed from 70 to 75 - less trigger-happy
+            (dataframe['close'] >= dataframe['bb_upper'] * 0.95)  # Changed from 0.99 to 0.95
         )
         
         if condition.iloc[-1]:
-            reason = "RSI Overbought" if dataframe['rsi'].iloc[-1] >= 70 else "BB Upper Touch"
+            reason = "RSI Overbought" if dataframe['rsi'].iloc[-1] >= 75 else "BB Upper Touch"
             logger.info(f"📉 MEAN REVERSION EXIT for {pair}: {reason}")
             return 1
         return 0

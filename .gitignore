@@ -203,4 +203,5 @@ Thumbs.db
 .kiro/
 
 # Virtual environment
-trading_env/
+# Virtual environments
+.venv/

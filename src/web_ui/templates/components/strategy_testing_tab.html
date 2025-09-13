@@ -1,0 +1,344 @@
+<!-- Strategy Testing Tab -->
+<div class="space-y-6">
+    <!-- Strategy Testing Controls -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-flask mr-3 text-green-400"></i>Strategy Testing Lab
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Available Strategies -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <label class="text-gray-400 text-sm mb-2 block">Select Strategy</label>
+                <select x-model="selectedTestStrategy" class="w-full bg-gray-600 text-white rounded p-2">
+                    <option value="">Choose strategy...</option>
+                    <option value="MultiStrategy">MultiStrategy (Fixed)</option>
+                    <option value="MeanReversionStrategy">Mean Reversion</option>
+                    <option value="MomentumStrategy">Momentum</option>
+                    <option value="BreakoutStrategy">Breakout</option>
+                </select>
+            </div>
+            
+            <!-- Test Duration -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <label class="text-gray-400 text-sm mb-2 block">Test Duration (hours)</label>
+                <select x-model="testDuration" class="w-full bg-gray-600 text-white rounded p-2">
+                    <option value="2">2 hours</option>
+                    <option value="6">6 hours</option>
+                    <option value="12">12 hours</option>
+                    <option value="24">24 hours</option>
+                </select>
+            </div>
+            
+            <!-- Start Test Button -->
+            <div class="bg-gray-700 p-4 rounded-lg flex items-center">
+                <button 
+                    x-show="selectedTestStrategy"
+                    @click="startStrategyTest()"
+                    :disabled="!selectedTestStrategy"
+                    class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-2 rounded-lg transition duration-200">
+                    <i class="fas fa-play mr-2"></i>Start Test
+                </button>
+            </div>
+            
+            <!-- Stop All Tests -->
+            <div class="bg-gray-700 p-4 rounded-lg flex items-center">
+                <button 
+                    @click="stopAllTests()"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition duration-200">
+                    <i class="fas fa-stop mr-2"></i>Stop All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Running Tests Overview -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-chart-line mr-3 text-blue-400"></i>Active Strategy Tests
+        </h3>
+        
+        <div x-show="runningTests.length === 0" class="text-center py-8">
+            <i class="fas fa-flask text-gray-500 text-4xl mb-4"></i>
+            <p class="text-gray-400">No strategy tests running</p>
+            <p class="text-gray-500 text-sm">Start a test to see real-time performance data</p>
+        </div>
+        
+        <div x-show="runningTests.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <template x-for="test in runningTests" :key="test.strategy">
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-white font-semibold" x-text="test.strategy"></h4>
+                        <span :class="test.status === 'running' ? 'text-green-400' : 'text-red-400'" class="text-sm font-bold" x-text="test.status.toUpperCase()"></span>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Started:</span>
+                            <span class="text-white" x-text="formatTime(test.start_time)"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">PID:</span>
+                            <span class="text-white" x-text="test.pid"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Duration:</span>
+                            <span class="text-white" x-text="test.duration_hours + 'h'"></span>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        @click="stopStrategyTest(test.strategy)"
+                        class="w-full mt-3 bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded text-sm">
+                        <i class="fas fa-stop mr-1"></i>Stop Test
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Strategy Performance Comparison -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-trophy mr-3 text-yellow-400"></i>Performance Comparison
+        </h3>
+        
+        <div x-show="strategyComparison.length === 0" class="text-center py-8">
+            <i class="fas fa-chart-bar text-gray-500 text-4xl mb-4"></i>
+            <p class="text-gray-400">No performance data yet</p>
+            <p class="text-gray-500 text-sm">Strategy tests need to complete some trades to show comparison</p>
+        </div>
+        
+        <div x-show="strategyComparison.length > 0" class="space-y-4">
+            <template x-for="(strategy, index) in strategyComparison" :key="strategy.strategy">
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <div :class="index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-blue-600'" 
+                                 class="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                                <span x-text="index + 1"></span>
+                            </div>
+                            <h4 class="text-white font-semibold" x-text="strategy.strategy"></h4>
+                            <span :class="strategy.status === 'active' ? 'text-green-400' : 'text-gray-400'" 
+                                  class="ml-2 text-xs px-2 py-1 rounded" x-text="strategy.status"></span>
+                        </div>
+                        <div class="text-right">
+                            <p :class="strategy.total_profit >= 0 ? 'text-green-400' : 'text-red-400'" 
+                               class="text-lg font-bold" x-text="formatCurrency(strategy.total_profit)"></p>
+                            <p class="text-gray-400 text-sm">Total P&L</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="text-center">
+                            <p class="text-blue-400 font-bold" x-text="strategy.total_trades"></p>
+                            <p class="text-gray-400">Total Trades</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-green-400 font-bold" x-text="Math.round(strategy.win_rate) + '%'"></p>
+                            <p class="text-gray-400">Win Rate</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-white font-bold" x-text="strategy.winning_trades"></p>
+                            <p class="text-gray-400">Wins</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-purple-400 font-bold" x-text="Math.round(strategy.avg_profit_ratio * 100) + '%'"></p>
+                            <p class="text-gray-400">Avg Profit</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Bar -->
+                    <div class="mt-3">
+                        <div class="w-full bg-gray-600 rounded-full h-2">
+                            <div :class="strategy.win_rate >= 60 ? 'bg-green-400' : strategy.win_rate >= 45 ? 'bg-yellow-400' : 'bg-red-400'" 
+                                 class="h-2 rounded-full transition-all duration-300" 
+                                 :style="'width: ' + Math.min(strategy.win_rate, 100) + '%'"></div>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-1">Win Rate Performance</p>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Detailed Strategy Performance -->
+    <div x-show="selectedStrategyDetail" class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-microscope mr-3 text-purple-400"></i>
+            <span x-text="selectedStrategyDetail + ' - Detailed Analysis'"></span>
+        </h3>
+        
+        <div x-show="strategyDetailData" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Performance Metrics -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <h4 class="text-white font-semibold mb-4">Performance Metrics</h4>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Total Trades:</span>
+                        <span class="text-white font-bold" x-text="strategyDetailData.total_trades || 0"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Win Rate:</span>
+                        <span class="text-green-400 font-bold" x-text="Math.round(strategyDetailData.win_rate || 0) + '%'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Total Profit:</span>
+                        <span :class="(strategyDetailData.total_profit || 0) >= 0 ? 'text-green-400' : 'text-red-400'" 
+                              class="font-bold" x-text="formatCurrency(strategyDetailData.total_profit || 0)"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Best Trade:</span>
+                        <span class="text-green-400 font-bold" x-text="Math.round((strategyDetailData.best_trade || 0) * 100) + '%'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Worst Trade:</span>
+                        <span class="text-red-400 font-bold" x-text="Math.round((strategyDetailData.worst_trade || 0) * 100) + '%'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Avg Duration:</span>
+                        <span class="text-white font-bold" x-text="Math.round(strategyDetailData.avg_duration_minutes || 0) + 'm'"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Trades -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <h4 class="text-white font-semibold mb-4">Recent Trades</h4>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <template x-for="trade in (strategyDetailData.recent_trades || [])" :key="trade.close_date">
+                        <div class="flex justify-between items-center p-2 bg-gray-600 rounded text-sm">
+                            <div>
+                                <span class="text-white font-semibold" x-text="trade.pair"></span>
+                                <div class="text-gray-400 text-xs" x-text="formatTime(trade.close_date)"></div>
+                            </div>
+                            <div class="text-right">
+                                <div :class="trade.profit_ratio > 0 ? 'text-green-400' : 'text-red-400'" 
+                                     class="font-bold" x-text="Math.round(trade.profit_ratio * 100) + '%'"></div>
+                                <div class="text-gray-400 text-xs" x-text="formatCurrency(trade.profit_abs)"></div>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <div x-show="!strategyDetailData.recent_trades || strategyDetailData.recent_trades.length === 0" 
+                         class="text-center py-4 text-gray-400">
+                        No trades completed yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add strategy testing functions to the dashboard
+Object.assign(window.dashboard(), {
+    selectedTestStrategy: '',
+    testDuration: 6,
+    runningTests: [],
+    strategyComparison: [],
+    selectedStrategyDetail: '',
+    strategyDetailData: null,
+    
+    async startStrategyTest() {
+        if (!this.selectedTestStrategy) return;
+        
+        try {
+            const response = await fetch('/api/strategy-testing/start', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    strategy: this.selectedTestStrategy,
+                    duration: this.testDuration
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showNotification(`Started testing ${this.selectedTestStrategy}`, 'success');
+                this.selectedTestStrategy = '';
+                this.loadRunningTests();
+            } else {
+                this.showNotification(`Failed to start test: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Error starting test', 'error');
+        }
+    },
+    
+    async stopStrategyTest(strategyName) {
+        try {
+            const response = await fetch('/api/strategy-testing/stop', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({strategy: strategyName})
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showNotification(`Stopped test ${strategyName}`, 'success');
+                this.loadRunningTests();
+            } else {
+                this.showNotification(`Failed to stop test: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Error stopping test', 'error');
+        }
+    },
+    
+    async stopAllTests() {
+        for (const test of this.runningTests) {
+            await this.stopStrategyTest(test.strategy);
+        }
+    },
+    
+    async loadRunningTests() {
+        try {
+            const response = await fetch('/api/strategy-testing/list');
+            const result = await response.json();
+            this.runningTests = result.tests || [];
+        } catch (error) {
+            console.error('Error loading running tests:', error);
+        }
+    },
+    
+    async loadStrategyComparison() {
+        try {
+            const response = await fetch('/api/strategy-testing/compare');
+            const result = await response.json();
+            this.strategyComparison = result.comparison || [];
+        } catch (error) {
+            console.error('Error loading strategy comparison:', error);
+        }
+    },
+    
+    async loadStrategyDetail(strategyName) {
+        try {
+            const response = await fetch(`/api/strategy-testing/performance/${strategyName}`);
+            const result = await response.json();
+            
+            if (!result.error) {
+                this.selectedStrategyDetail = strategyName;
+                this.strategyDetailData = result;
+            }
+        } catch (error) {
+            console.error('Error loading strategy detail:', error);
+        }
+    },
+    
+    formatTime(dateString) {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleTimeString();
+    }
+});
+
+// Auto-refresh testing data
+setInterval(() => {
+    if (window.dashboard().activeTab === 'testing') {
+        window.dashboard().loadRunningTests();
+        window.dashboard().loadStrategyComparison();
+    }
+}, 10000); // Every 10 seconds
+</script>

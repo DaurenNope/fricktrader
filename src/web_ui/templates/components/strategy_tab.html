@@ -1,0 +1,266 @@
+<!-- Strategy Tab -->
+<div class="space-y-6">
+    <!-- Strategy Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Active Strategy</p>
+                    <p class="text-xl font-bold text-white" x-text="tradeLogic.strategyState.current_strategy">MultiStrategy</p>
+                    <p class="text-purple-400 text-sm">Adaptive System</p>
+                </div>
+                <div class="bg-purple-500 p-3 rounded-full">
+                    <i class="fas fa-brain text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Win Rate</p>
+                    <p class="text-xl font-bold text-white" x-text="formatPercentage(portfolio.win_rate)">65.4%</p>
+                    <p class="text-green-400 text-sm">Above Target</p>
+                </div>
+                <div class="bg-green-500 p-3 rounded-full">
+                    <i class="fas fa-chart-line text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Total P&L</p>
+                    <p class="text-xl font-bold text-white" x-text="formatCurrency(portfolio.total_pnl)">$125.30</p>
+                    <p class="text-blue-400 text-sm">This Month</p>
+                </div>
+                <div class="bg-blue-500 p-3 rounded-full">
+                    <i class="fas fa-dollar-sign text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Total Trades</p>
+                    <p class="text-xl font-bold text-white" x-text="portfolio.total_trades">47</p>
+                    <p class="text-yellow-400 text-sm">Active Trades: <span x-text="portfolio.active_positions">0</span></p>
+                </div>
+                <div class="bg-yellow-500 p-3 rounded-full">
+                    <i class="fas fa-exchange-alt text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Selection & Performance -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Individual Strategy Breakdown -->
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-chart-bar mr-3 text-green-400"></i>Strategy Performance Breakdown
+            </h3>
+            
+            <div x-show="strategyPerformance.length === 0" class="text-center py-8">
+                <i class="fas fa-chart-bar text-gray-500 text-4xl mb-4"></i>
+                <p class="text-gray-400">No strategy performance data available</p>
+                <p class="text-gray-500 text-sm">Strategy performance will appear when trades are completed</p>
+            </div>
+            
+            <div x-show="strategyPerformance.length > 0" class="space-y-4">
+                <template x-for="strategy in strategyPerformance" :key="strategy.name">
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-white font-semibold" x-text="strategy.name"></span>
+                            <span :class="strategy.pnl >= 0 ? 'text-green-400' : 'text-red-400'" 
+                                  class="font-bold" x-text="formatCurrency(strategy.pnl)"></span>
+                        </div>
+                        <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
+                            <div :class="strategy.win_rate >= 60 ? 'bg-green-400' : strategy.win_rate >= 45 ? 'bg-yellow-400' : 'bg-red-400'" 
+                                 class="h-2 rounded-full transition-all duration-300" 
+                                 :style="'width: ' + Math.min(strategy.win_rate, 100) + '%'"></div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-400">
+                            <span x-text="'Win Rate: ' + Math.round(strategy.win_rate) + '%'"></span>
+                            <span x-text="strategy.total_trades + ' trades'"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Current Market Analysis -->
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-brain mr-3 text-purple-400"></i>Current Market Analysis
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Market State:</span>
+                        <span class="text-white font-semibold" x-text="tradeLogic.strategyState.market_analysis.selected_strategy || 'MEAN REVERSION'">MEAN REVERSION</span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Trend Direction:</span>
+                        <span class="text-white font-semibold" x-text="tradeLogic.strategyState.market_analysis.trend_direction">SIDEWAYS</span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Volatility:</span>
+                        <span class="text-white font-semibold" x-text="tradeLogic.strategyState.market_analysis.volatility">MODERATE</span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Volume Analysis:</span>
+                        <span class="text-white font-semibold" x-text="tradeLogic.strategyState.market_analysis.volume || 'NORMAL'">NORMAL</span>
+                    </div>
+                </div>
+                
+                <!-- Strategy Reasoning -->
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <h4 class="text-white font-semibold mb-2">Current Reasoning</h4>
+                    <p class="text-gray-300 text-sm" x-text="tradeLogic.strategyState.market_analysis.reasoning">
+                        Market showing sideways consolidation with moderate volatility. Mean reversion strategy selected for range-bound conditions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Risk Management & Strategy Settings -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Risk Metrics -->
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-shield-alt mr-3 text-red-400"></i>Risk Management
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <span class="text-gray-400">Stop Loss</span>
+                    <span class="text-red-400 font-bold" x-text="riskMetrics.stop_loss || 'N/A'">N/A</span>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <span class="text-gray-400">Max Open Trades</span>
+                    <span class="text-white font-bold" x-text="maxOpenTrades || 'N/A'">N/A</span>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <span class="text-gray-400">Max Drawdown</span>
+                    <span class="text-yellow-400 font-bold" x-text="riskMetrics.max_drawdown || 'N/A'">N/A</span>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <span class="text-gray-400">Sharpe Ratio</span>
+                    <span class="text-green-400 font-bold" x-text="riskMetrics.sharpe_ratio || 'N/A'">N/A</span>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <span class="text-gray-400">Profit Factor</span>
+                    <span class="text-blue-400 font-bold" x-text="riskMetrics.profit_factor || 'N/A'">N/A</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Strategy Configuration -->
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-cog mr-3 text-blue-400"></i>Strategy Configuration
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <label class="text-gray-400 text-sm">Active Strategy</label>
+                    <select class="w-full mt-1 bg-gray-600 text-white rounded p-2" x-model="selectedStrategy">
+                        <option value="MultiStrategy">MultiStrategy (Adaptive)</option>
+                        <option value="MeanReversion">Mean Reversion Only</option>
+                        <option value="Momentum">Momentum Only</option>
+                        <option value="Breakout">Breakout Only</option>
+                    </select>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <label class="text-gray-400 text-sm">Timeframe</label>
+                    <select class="w-full mt-1 bg-gray-600 text-white rounded p-2">
+                        <option value="15m">15 minutes</option>
+                        <option value="1h">1 hour</option>
+                        <option value="4h">4 hours</option>
+                        <option value="1d">1 day</option>
+                    </select>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <label class="text-gray-400 text-sm">Risk Level</label>
+                    <select class="w-full mt-1 bg-gray-600 text-white rounded p-2">
+                        <option value="conservative">Conservative</option>
+                        <option value="moderate" selected>Moderate</option>
+                        <option value="aggressive">Aggressive</option>
+                    </select>
+                </div>
+                
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition duration-200">
+                    <i class="fas fa-save mr-2"></i>Update Strategy Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Strategy Signals -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-signal mr-3 text-indigo-400"></i>Recent Strategy Signals
+        </h3>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-gray-400 text-sm border-b border-gray-700">
+                        <th class="pb-3">Time</th>
+                        <th class="pb-3">Pair</th>
+                        <th class="pb-3">Strategy</th>
+                        <th class="pb-3">Signal</th>
+                        <th class="pb-3">Price</th>
+                        <th class="pb-3">Reasoning</th>
+                        <th class="pb-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    <template x-for="signal in recentSignals" :key="signal.id">
+                        <tr class="border-b border-gray-700">
+                            <td class="py-3 text-gray-300" x-text="formatTime(signal.timestamp)"></td>
+                            <td class="py-3 text-white font-semibold" x-text="signal.pair"></td>
+                            <td class="py-3 text-purple-400" x-text="signal.strategy"></td>
+                            <td class="py-3">
+                                <span :class="signal.signal_type === 'EXIT' ? 'bg-red-500' : 'bg-green-500'" 
+                                      class="text-white px-2 py-1 rounded text-xs" x-text="signal.signal_type"></span>
+                            </td>
+                            <td class="py-3 text-white" x-text="formatCurrency(signal.price)"></td>
+                            <td class="py-3 text-gray-400" x-text="signal.reasoning"></td>
+                            <td class="py-3" :class="signal.status === 'Executed' ? 'text-green-400' : signal.status === 'Pending' ? 'text-yellow-400' : 'text-red-400'" 
+                                x-text="signal.status"></td>
+                        </tr>
+                    </template>
+                    
+                    <tr x-show="!recentSignals || recentSignals.length === 0" class="border-b border-gray-700">
+                        <td colspan="7" class="py-8 text-center text-gray-400">
+                            <i class="fas fa-signal text-4xl mb-2"></i>
+                            <div>No recent signals available</div>
+                            <div class="text-sm text-gray-500">Strategy signals will appear here when generated</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

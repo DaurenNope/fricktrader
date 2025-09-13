@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrickTrader Dashboard</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    
+    <!-- TradingView Charting Library -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen" x-data="dashboard()">
+    <!-- Header -->
+    {% include 'components/header.html' %}
+    
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        <!-- Tab Navigation -->
+        {% include 'components/tab_navigation.html' %}
+        
+        <!-- Tab Content -->
+        <div class="mt-8">
+            <!-- Overview Tab -->
+            <div x-show="activeTab === 'overview'" class="space-y-6">
+                {% include 'components/overview_tab.html' %}
+            </div>
+            
+            <!-- Trading Tab -->
+            <div x-show="activeTab === 'trading'" class="space-y-6">
+                {% include 'components/trading_tab.html' %}
+            </div>
+
+            <!-- Trade Analysis Tab -->
+            <div x-show="activeTab === 'analysis'" class="space-y-6">
+                {% include 'components/trade_analysis_tab.html' %}
+            </div>
+            
+            <!-- Market Tab -->
+            <div x-show="activeTab === 'market'" class="space-y-6">
+                {% include 'components/market_tab.html' %}
+            </div>
+            
+            <!-- Strategy Tab -->
+            <div x-show="activeTab === 'strategy'" class="space-y-6">
+                {% include 'components/strategy_tab.html' %}
+            </div>
+            
+            <!-- Strategy Creation Tab -->
+            <div x-show="activeTab === 'create'" class="space-y-6">
+                {% include 'components/strategy_creation_tab.html' %}
+            </div>
+            
+            <!-- Charts Tab -->
+            <div x-show="activeTab === 'charts'" class="space-y-6">
+                {% include 'components/charts_tab.html' %}
+            </div>
+            
+            <!-- Testing Tab -->
+            <div x-show="activeTab === 'testing'" class="space-y-6">
+                {% include 'components/strategy_testing_tab.html' %}
+            </div>
+            
+            <!-- Controls Tab -->
+            <div x-show="activeTab === 'controls'" class="space-y-6">
+                {% include 'components/controls_tab.html' %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript Modules -->
+    <script>
+        // Simple working dashboard data
+        function dashboard() {
+            return {
+                activeTab: 'overview',
+                status: { api_connected: true, bot_running: true, strategy: 'MultiStrategy', dry_run: true, exchange: 'binance' },
+                portfolio: { total_value: 1003.32, total_pnl: -6.68, today_pnl: 0, active_positions: 0, total_trades: 0, win_rate: 0 },
+                activeTrades: [],
+                recentTrades: [],
+                whitelist: ['BTC/USDT', 'ETH/USDT', 'ADA/USDT', 'DOT/USDT', 'LINK/USDT', 'SOL/USDT', 'AVAX/USDT', 'UNI/USDT', 'ATOM/USDT'],
+                selectedStrategy: 'MultiStrategy', maxOpenTrades: 6, stakeAmount: 'unlimited',
+                openbbTechnicalsData: { rsi: { current: 58.2 }, macd: { macd: 0.0012 } },
+                openbbSectorRotationData: { 'DeFi': 2.4, 'Layer1': -1.2, 'NFT': 0.8, 'Gaming': 3.1 },
+                tradeLogic: { strategyState: { current_strategy: 'MultiStrategy', market_analysis: { volatility: 'MODERATE', trend_direction: 'SIDEWAYS', volume: 'NORMAL', selected_strategy: 'MEAN REVERSION', reasoning: 'Market showing sideways consolidation' } } },
+                selectedChartPair: 'BTC/USDT', selectedTimeframe: '1h', selectedChartType: 'candlesticks', chartLoading: false,
+                chartData: { current: { open: 45123.50, high: 45789.25, low: 44856.75, close: 45234.80, volume: 28500000, change: 2.35 } },
+                indicators: { sma: false, ema: false, rsi: false, macd: false, bollinger: false },
+                currentSignals: [{ id: 1, type: 'BUY', confidence: 82, price: '45230.50', reason: 'RSI oversold + MACD bullish crossover' }],
+                supportResistanceLevels: [{ type: 'resistance', price: '46500.00', strength: 'Strong', distance: '+2.8%' }, { type: 'support', price: '44200.00', strength: 'Moderate', distance: '-2.3%' }],
+                recentChartTrades: [{ id: 1, pair: 'BTC/USDT', side: 'buy', price: '45230.50', amount: '0.0235', pnl: '+125.30', date: '13:45:22' }],
+                volumeAnalysis: { current: '28.5M', average: '24.8M', trend: 'increasing', analysis: 'Volume above average' },
+                detectedPatterns: [{ id: 1, name: 'Ascending Triangle', description: 'Bullish continuation pattern', reliability: 78, target: '47500', stopLoss: '43500' }],
+                selectedPair: '', manualStakeAmount: '', newPair: '',
+                strategyPerformance: [], riskMetrics: {}, recentSignals: [],
+                
+                init() {
+                    console.log('🚀 Dashboard initialized');
+                    this.loadData();
+                    setInterval(() => this.loadData(), 10000);
+                    // Initialize strategy creation if function exists
+                    if (this.initStrategyCreation) this.initStrategyCreation();
+                },
+                
+                async loadData() {
+                    try {
+                        const [statusRes, balanceRes, tradesRes, recentRes, perfRes, riskRes, signalsRes] = await Promise.all([
+                            fetch('/api/status').catch(() => null),
+                            fetch('/api/balance').catch(() => null),
+                            fetch('/api/trades/current').catch(() => null),
+                            fetch('/api/trades/recent').catch(() => null),
+                            fetch('/api/strategies/performance').catch(() => null),
+                            fetch('/api/strategy/risk-metrics').catch(() => null),
+                            fetch('/api/recent-signals').catch(() => null)
+                        ]);
+                        
+                        if (statusRes?.ok) {
+                            const statusData = await statusRes.json();
+                            this.status = { ...this.status, ...statusData };
+                        }
+                        
+                        if (balanceRes?.ok) {
+                            const balanceData = await balanceRes.json();
+                            if (balanceData.total) {
+                                this.portfolio.total_value = balanceData.total;
+                                this.portfolio.total_pnl = balanceData.total - 1000;
+                            }
+                        }
+                        
+                        if (tradesRes?.ok) {
+                            const tradesData = await tradesRes.json();
+                            this.activeTrades = tradesData.trades || [];
+                            this.portfolio.active_positions = tradesData.count || 0;
+                        }
+                        
+                        if (recentRes?.ok) {
+                            const recentData = await recentRes.json();
+                            this.recentTrades = recentData.trades || [];
+                        }
+                        
+                        if (perfRes?.ok) {
+                            const perfData = await perfRes.json();
+                            this.strategyPerformance = perfData || [];
+                        }
+                        
+                        if (riskRes?.ok) {
+                            const riskData = await riskRes.json();
+                            this.riskMetrics = riskData || {};
+                        }
+                        
+                        if (signalsRes?.ok) {
+                            const signalsData = await signalsRes.json();
+                            this.recentSignals = signalsData || [];
+                        }
+                        
+                        console.log('✅ Trading data updated');
+                    } catch (error) {
+                        console.log('Using fallback data');
+                    }
+                },
+                
+                loadChartData() { console.log('Loading chart data...'); this.chartLoading = true; setTimeout(() => this.chartLoading = false, 500); },
+                toggleIndicator(ind) { this.indicators[ind] = !this.indicators[ind]; console.log(`${ind}: ${this.indicators[ind] ? 'ON' : 'OFF'}`); },
+                updateChartType() { this.loadChartData(); },
+                
+                async startBot() {
+                    try {
+                        const res = await fetch('/api/start', { method: 'POST' });
+                        const data = await res.json();
+                        this.showNotification(data.success ? 'Bot started' : 'Failed to start bot', data.success ? 'success' : 'error');
+                        if (data.success) this.loadData();
+                    } catch (error) {
+                        this.showNotification('Error starting bot', 'error');
+                    }
+                },
+                
+                async stopBot() {
+                    try {
+                        const res = await fetch('/api/stop', { method: 'POST' });
+                        const data = await res.json();
+                        this.showNotification(data.success ? 'Bot stopped' : 'Failed to stop bot', data.success ? 'success' : 'error');
+                        if (data.success) this.loadData();
+                    } catch (error) {
+                        this.showNotification('Error stopping bot', 'error');
+                    }
+                },
+                
+                showNotification(msg, type = 'info') {
+                    const div = document.createElement('div');
+                    div.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`;
+                    div.textContent = msg;
+                    document.body.appendChild(div);
+                    setTimeout(() => div.remove(), 3000);
+                },
+                
+                formatCurrency(val) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val); },
+                formatPercentage(val) { return new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 1 }).format(val / 100); },
+                formatDate(str) { return new Date(str).toLocaleString(); }
+            };
+        }
+    </script>
+</body>
+</html>

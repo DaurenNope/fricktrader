@@ -1,0 +1,183 @@
+<!-- Trading Tab -->
+<div class="space-y-6">
+    <!-- Bot Controls -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-exchange-alt mr-3 text-green-400"></i>Trading Controls
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Bot Status & Controls -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-white">Bot Status</h3>
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-400">Status:</span>
+                        <span :class="status.bot_running ? 'text-green-400' : 'text-red-400'" class="font-semibold">
+                            <i :class="status.bot_running ? 'fas fa-circle text-green-400' : 'fas fa-circle text-red-400'" class="mr-2 text-xs"></i>
+                            <span x-text="status.bot_running ? 'RUNNING' : 'STOPPED'"></span>
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-400">Strategy:</span>
+                        <span class="text-white font-semibold" x-text="status.strategy || 'MultiStrategy'"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400">Exchange:</span>
+                        <span class="text-white font-semibold" x-text="status.exchange || 'binance'"></span>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <button @click="startBot()" 
+                            :disabled="status.bot_running"
+                            :class="status.bot_running ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'"
+                            class="w-full btn-success text-white px-6 py-3 rounded-lg font-semibold transition-all">
+                        <i class="fas fa-play mr-2"></i>Start Bot
+                    </button>
+                    <button @click="stopBot()" 
+                            :disabled="!status.bot_running"
+                            :class="!status.bot_running ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'"
+                            class="w-full btn-danger text-white px-6 py-3 rounded-lg font-semibold transition-all">
+                        <i class="fas fa-stop mr-2"></i>Stop Bot
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Strategy Settings -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-white">Strategy Settings</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-gray-400 text-sm font-medium mb-2">Active Strategy</label>
+                        <select x-model="selectedStrategy" class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600">
+                            <option value="MultiStrategy">MultiStrategy</option>
+                            <option value="MomentumStrategy">Momentum Strategy</option>
+                            <option value="MeanReversionStrategy">Mean Reversion</option>
+                            <option value="BreakoutStrategy">Breakout Strategy</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm font-medium mb-2">Max Open Trades</label>
+                        <input x-model="maxOpenTrades" type="number" min="1" max="10" 
+                               class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm font-medium mb-2">Stake Amount</label>
+                        <input x-model="stakeAmount" type="text" placeholder="unlimited" 
+                               class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Trades -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-chart-line mr-3 text-blue-400"></i>Active Trades
+            <span class="ml-2 bg-blue-600 text-xs px-2 py-1 rounded-full" x-text="activeTrades.length || 0"></span>
+        </h2>
+        
+        <div x-show="activeTrades.length === 0" class="text-center py-8">
+            <i class="fas fa-chart-line text-gray-600 text-4xl mb-4"></i>
+            <p class="text-gray-400">No active trades</p>
+            <p class="text-gray-500 text-sm">Bot is monitoring markets for opportunities</p>
+        </div>
+        
+        <div x-show="activeTrades.length > 0" class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-gray-400 text-sm border-b border-gray-700">
+                        <th class="pb-2">Pair</th>
+                        <th class="pb-2">Side</th>
+                        <th class="pb-2">Amount</th>
+                        <th class="pb-2">Entry Price</th>
+                        <th class="pb-2">Current Price</th>
+                        <th class="pb-2">P&L</th>
+                        <th class="pb-2">Duration</th>
+                        <th class="pb-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="trade in activeTrades" :key="trade.trade_id">
+                        <tr class="border-b border-gray-700 hover:bg-gray-750">
+                            <td class="py-3 font-semibold text-white" x-text="trade.pair"></td>
+                            <td class="py-3">
+                                <span :class="trade.is_short ? 'text-red-400' : 'text-green-400'" 
+                                      class="px-2 py-1 rounded text-xs font-semibold" 
+                                      x-text="trade.is_short ? 'SHORT' : 'LONG'"></span>
+                            </td>
+                            <td class="py-3 text-gray-300" x-text="trade.amount"></td>
+                            <td class="py-3 text-gray-300" x-text="'$' + trade.open_rate"></td>
+                            <td class="py-3 text-gray-300" x-text="'$' + trade.current_rate"></td>
+                            <td class="py-3">
+                                <span :class="trade.profit_ratio >= 0 ? 'text-green-400' : 'text-red-400'" 
+                                      class="font-semibold" 
+                                      x-text="(trade.profit_ratio * 100).toFixed(2) + '%'"></span>
+                            </td>
+                            <td class="py-3 text-gray-300" x-text="trade.open_date"></td>
+                            <td class="py-3">
+                                <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                                    Close
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Trades History -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-history mr-3 text-purple-400"></i>Recent Trades
+        </h2>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-gray-400 text-sm border-b border-gray-700">
+                        <th class="pb-2">Date</th>
+                        <th class="pb-2">Pair</th>
+                        <th class="pb-2">Side</th>
+                        <th class="pb-2">Amount</th>
+                        <th class="pb-2">Price</th>
+                        <th class="pb-2">P&L %</th>
+                        <th class="pb-2">P&L $</th>
+                        <th class="pb-2">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="trade in recentTrades" :key="trade.id">
+                        <tr class="border-b border-gray-700 hover:bg-gray-750">
+                            <td class="py-3 text-gray-300" x-text="formatDate(trade.date)"></td>
+                            <td class="py-3 font-semibold text-white" x-text="trade.pair"></td>
+                            <td class="py-3">
+                                <span :class="trade.side === 'sell' ? 'text-red-400' : 'text-green-400'" 
+                                      class="px-2 py-1 rounded text-xs font-semibold uppercase" 
+                                      x-text="trade.side"></span>
+                            </td>
+                            <td class="py-3 text-gray-300" x-text="trade.amount"></td>
+                            <td class="py-3 text-gray-300" x-text="'$' + trade.price.toLocaleString()"></td>
+                            <td class="py-3">
+                                <span :class="trade.profit_pct >= 0 ? 'text-green-400' : 'text-red-400'" 
+                                      class="font-semibold" 
+                                      x-text="trade.profit_pct.toFixed(2) + '%'"></span>
+                            </td>
+                            <td class="py-3">
+                                <span :class="trade.profit_abs >= 0 ? 'text-green-400' : 'text-red-400'" 
+                                      class="font-semibold" 
+                                      x-text="'$' + trade.profit_abs.toFixed(2)"></span>
+                            </td>
+                            <td class="py-3">
+                                <span class="px-2 py-1 rounded text-xs bg-gray-600 text-gray-300" x-text="trade.status"></span>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

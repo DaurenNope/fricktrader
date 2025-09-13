@@ -1,5 +1,5 @@
 # Core dependencies for the automated trading system
-freqtrade==2025.6
+freqtrade==2024.9
 pandas>=1.5.0
 numpy>=1.24.0
 scipy>=1.10.0

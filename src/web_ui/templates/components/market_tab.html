@@ -1,0 +1,238 @@
+<!-- Market Tab -->
+<div class="space-y-6">
+    <!-- Market Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-gray-800 p-4 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Bitcoin Price</p>
+                    <p class="text-2xl font-bold text-white" id="btcPrice">$45,234</p>
+                    <p class="text-green-400 text-sm">+2.35%</p>
+                </div>
+                <div class="bg-orange-500 p-3 rounded-full">
+                    <i class="fab fa-bitcoin text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-4 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Total Market Cap</p>
+                    <p class="text-2xl font-bold text-white">$1.23T</p>
+                    <p class="text-red-400 text-sm">-0.82%</p>
+                </div>
+                <div class="bg-blue-500 p-3 rounded-full">
+                    <i class="fas fa-chart-pie text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-4 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">24h Volume</p>
+                    <p class="text-2xl font-bold text-white" id="totalVolume">$24.5B</p>
+                    <p class="text-green-400 text-sm">+15.4%</p>
+                </div>
+                <div class="bg-purple-500 p-3 rounded-full">
+                    <i class="fas fa-exchange-alt text-white"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-4 rounded-xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Fear & Greed</p>
+                    <p class="text-2xl font-bold text-white" id="fearGreedValue">52</p>
+                    <p class="text-yellow-400 text-sm">Neutral</p>
+                </div>
+                <div class="bg-yellow-500 p-3 rounded-full">
+                    <i class="fas fa-thermometer-half text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Watchlist -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-white flex items-center">
+                <i class="fas fa-star mr-3 text-yellow-400"></i>Live Watchlist
+            </h2>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                <i class="fas fa-plus mr-2"></i>Add Pair
+            </button>
+        </div>
+        
+        <div id="watchlist" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Watchlist items loaded by JavaScript -->
+            <div class="bg-gray-700 p-4 rounded-lg animate-pulse">
+                <div class="h-4 bg-gray-600 rounded mb-2"></div>
+                <div class="h-6 bg-gray-600 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Heatmap -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-fire mr-3 text-red-400"></i>Market Heatmap
+        </h2>
+        
+        <div id="marketHeatMap" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <!-- Heatmap loaded by JavaScript -->
+            <div class="bg-gray-700 p-4 rounded-lg animate-pulse">
+                <div class="h-4 bg-gray-600 rounded mb-2"></div>
+                <div class="h-6 bg-gray-600 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Analysis -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Technical Indicators -->
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-chart-line mr-3 text-green-400"></i>Technical Indicators
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <div>
+                        <span class="text-gray-400">RSI (14)</span>
+                        <p class="text-sm text-gray-500">Relative Strength Index</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-white font-bold" x-text="openbbTechnicalsData?.rsi?.current || 58.2">58.2</span>
+                        <p class="text-yellow-400 text-sm">NEUTRAL</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <div>
+                        <span class="text-gray-400">MACD</span>
+                        <p class="text-sm text-gray-500">Moving Average Convergence</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-white font-bold" x-text="openbbTechnicalsData?.macd?.macd || 0.0012">0.0012</span>
+                        <p class="text-green-400 text-sm">BULLISH</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <div>
+                        <span class="text-gray-400">Bollinger Bands</span>
+                        <p class="text-sm text-gray-500">Price volatility indicator</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-white font-bold">Middle</span>
+                        <p class="text-blue-400 text-sm">TREND</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Crypto Sectors Performance -->
+        <div class="bg-gray-800 p-6 rounded-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-layer-group mr-3 text-purple-400"></i>Crypto Sectors
+            </h3>
+            
+            <div class="space-y-4">
+                <template x-for="(performance, sector) in openbbSectorRotationData" :key="sector">
+                    <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <div>
+                            <span class="text-gray-300" x-text="sector">DeFi</span>
+                            <p class="text-sm text-gray-500">24h Performance</p>
+                        </div>
+                        <div class="text-right">
+                            <span :class="performance >= 0 ? 'text-green-400' : 'text-red-400'" 
+                                  class="font-bold" x-text="performance + '%'">+2.4%</span>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- Fallback when no sector data -->
+                <div x-show="!openbbSectorRotationData || Object.keys(openbbSectorRotationData).length === 0">
+                    <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <div>
+                            <span class="text-gray-300">DeFi</span>
+                            <p class="text-sm text-gray-500">24h Performance</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-green-400 font-bold">+2.4%</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <div>
+                            <span class="text-gray-300">Layer 1</span>
+                            <p class="text-sm text-gray-500">24h Performance</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-red-400 font-bold">-1.2%</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <div>
+                            <span class="text-gray-300">Gaming</span>
+                            <p class="text-sm text-gray-500">24h Performance</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-green-400 font-bold">+3.1%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market News & Sentiment -->
+    <div class="bg-gray-800 p-6 rounded-xl">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-newspaper mr-3 text-indigo-400"></i>Market Sentiment
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="flex items-center mb-3">
+                    <div class="bg-green-500 p-2 rounded-full mr-3">
+                        <i class="fas fa-arrow-up text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-semibold">Bullish Signals</h4>
+                        <p class="text-green-400 text-sm">Strong momentum detected</p>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm">RSI oversold conditions with increasing volume across major pairs</p>
+            </div>
+            
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="flex items-center mb-3">
+                    <div class="bg-yellow-500 p-2 rounded-full mr-3">
+                        <i class="fas fa-exclamation text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-semibold">Market Alert</h4>
+                        <p class="text-yellow-400 text-sm">Volatility spike</p>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm">Increased volatility expected due to upcoming economic data</p>
+            </div>
+            
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="flex items-center mb-3">
+                    <div class="bg-blue-500 p-2 rounded-full mr-3">
+                        <i class="fas fa-chart-bar text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-semibold">Volume Analysis</h4>
+                        <p class="text-blue-400 text-sm">Above average activity</p>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm">24h volume 15% above 30-day moving average</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+<!-- Navigation Tabs -->
+<nav class="flex space-x-1 mb-8 bg-gray-800 p-1 rounded-lg">
+    <button @click="activeTab = 'overview'" :class="activeTab === 'overview' ? 'nav-tab active' : 'nav-tab'" 
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-chart-line mr-2"></i>Overview
+    </button>
+    <button @click="activeTab = 'trading'" :class="activeTab === 'trading' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-exchange-alt mr-2"></i>Trading
+    </button>
+    <button @click="activeTab = 'analysis'" :class="activeTab === 'analysis' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-search-dollar mr-2"></i>Analysis
+    </button>
+    <button @click="activeTab = 'market'" :class="activeTab === 'market' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-globe mr-2"></i>Market
+    </button>
+    <button @click="activeTab = 'strategy'" :class="activeTab === 'strategy' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-brain mr-2"></i>Strategy
+    </button>
+    <button @click="activeTab = 'create'" :class="activeTab === 'create' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-code mr-2"></i>Create
+    </button>
+    <button @click="activeTab = 'charts'" :class="activeTab === 'charts' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-chart-area mr-2"></i>Charts
+    </button>
+    <button @click="activeTab = 'testing'" :class="activeTab === 'testing' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-flask mr-2"></i>Testing
+    </button>
+    <button @click="activeTab = 'controls'" :class="activeTab === 'controls' ? 'nav-tab active' : 'nav-tab'"
+            class="px-6 py-3 rounded-md text-white font-medium transition-all">
+        <i class="fas fa-cogs mr-2"></i>Controls
+    </button>
+</nav>

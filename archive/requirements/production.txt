@@ -1,0 +1,31 @@
+# FrickTrader Production Requirements
+# Dependencies for production deployment
+
+-r base.txt
+
+# Production Database
+psycopg2-binary>=2.9.0  # PostgreSQL adapter
+
+# Production Cache
+redis>=4.6.0
+hiredis>=2.2.0
+
+# Production Web Server
+gunicorn>=21.2.0
+gevent>=23.7.0
+
+# Monitoring & Logging
+prometheus-client>=0.17.0
+structlog>=23.1.0
+
+# Security
+cryptography>=41.0.0
+
+# Performance
+uvloop>=0.17.0  # Faster event loop
+
+# System Monitoring
+psutil>=5.9.0
+
+# Environment Variables
+python-decouple>=3.8

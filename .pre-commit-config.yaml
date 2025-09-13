@@ -1,0 +1,112 @@
+# Professional Code Quality Pre-commit Hooks
+# Automatically formats and validates code before each commit
+
+repos:
+  # Code Formatting
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        language_version: python3.8
+        args: [--line-length=88]
+
+  # Import Sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
+
+  # Remove Unused Imports
+  - repo: https://github.com/pycqa/autoflake
+    rev: v2.2.0
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-all-unused-imports
+          - --remove-unused-variables
+          - --remove-duplicate-keys
+          - --ignore-init-module-imports
+
+  # Code Quality Checks
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=88, --extend-ignore=E203,W503]
+        additional_dependencies:
+          - flake8-docstrings
+          - flake8-bugbear
+          - flake8-comprehensions
+
+  # Security Analysis
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-r, ., -f, json, -o, reports/bandit-report.json]
+        exclude: ^tests/
+
+  # Type Checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.4.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests, types-PyYAML]
+        exclude: ^tests/
+
+  # General Code Quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      # Python-specific
+      - id: check-ast                 # Validate Python AST
+      - id: check-builtin-literals    # Use [] instead of list()
+      - id: check-docstring-first     # Docstring before code
+      - id: debug-statements          # No pdb/debugger imports
+      - id: name-tests-test           # Test files properly named
+      
+      # General file checks
+      - id: check-added-large-files   # Prevent large files
+        args: [--maxkb=1000]
+      - id: check-case-conflict       # Case-sensitive filesystems
+      - id: check-merge-conflict      # Merge conflict markers
+      - id: check-symlinks            # Broken symlinks
+      - id: destroyed-symlinks        # Destroyed symlinks
+      
+      # File formatting
+      - id: end-of-file-fixer         # Ensure files end with newline
+      - id: trailing-whitespace       # Remove trailing whitespace
+      - id: mixed-line-ending         # Consistent line endings
+      
+      # JSON/YAML validation
+      - id: check-json                # Valid JSON syntax
+      - id: check-yaml                # Valid YAML syntax
+      - id: check-toml                # Valid TOML syntax
+      
+      # Security
+      - id: detect-private-key        # No private keys committed
+
+  # Documentation
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: [--convention=google]
+        exclude: ^tests/
+
+  # Spell Checking (optional)
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.5
+    hooks:
+      - id: codespell
+        args: [--write-changes]
+        exclude: \.min\.(js|css)$
+
+# Configuration
+default_stages: [commit]
+default_install_hook_types: [pre-commit, pre-push]
+
+# Additional settings
+minimum_pre_commit_version: 3.3.0

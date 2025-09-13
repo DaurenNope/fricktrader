@@ -1,0 +1,110 @@
+<!-- Overview Tab -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Portfolio Value -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm font-medium">Total Portfolio</p>
+                <p class="text-2xl font-bold text-white mt-1" x-text="formatCurrency(portfolio.total_value)">$0.00</p>
+            </div>
+            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-wallet text-white text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-4">
+            <div class="text-xs text-gray-400">Today's P&L</div>
+            <div class="text-sm font-medium" :class="portfolio.today_pnl >= 0 ? 'text-green-400' : 'text-red-400'" 
+                 x-text="formatCurrency(portfolio.today_pnl)">$0.00</div>
+        </div>
+    </div>
+
+    <!-- Active Trades -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm font-medium">Active Trades</p>
+                <p class="text-2xl font-bold text-white mt-1" x-text="activeTrades.length">0</p>
+            </div>
+            <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-exchange-alt text-white text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-4">
+            <div class="text-xs text-gray-400">Total P&L</div>
+            <div class="text-sm font-medium" :class="portfolio.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'" 
+                 x-text="formatCurrency(portfolio.total_pnl)">$0.00</div>
+        </div>
+    </div>
+
+    <!-- Win Rate -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm font-medium">Win Rate</p>
+                <p class="text-2xl font-bold text-white mt-1" x-text="formatPercentage(portfolio.win_rate)">0%</p>
+            </div>
+            <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-chart-line text-white text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-4">
+            <div class="text-xs text-gray-400">Total Trades</div>
+            <div class="text-sm font-medium text-white" x-text="portfolio.total_trades">0</div>
+        </div>
+    </div>
+
+    <!-- Bot Status -->
+    <div class="bg-gray-800 p-6 rounded-xl card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm font-medium">Bot Status</p>
+                <p class="text-2xl font-bold mt-1" :class="status.bot_running ? 'text-green-400' : 'text-red-400'"
+                   x-text="status.bot_running ? 'RUNNING' : 'STOPPED'">UNKNOWN</p>
+            </div>
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center"
+                 :class="status.bot_running ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-red-600'">
+                <i class="fas fa-robot text-white text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-4">
+            <div class="text-xs text-gray-400">Strategy</div>
+            <div class="text-sm font-medium text-white" x-text="status.strategy">Unknown</div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Trades List -->
+<div class="bg-gray-800 p-6 rounded-xl card-hover">
+    <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+        <i class="fas fa-list-ul mr-3 text-green-400"></i>Active Trades
+    </h2>
+    
+    <div x-show="activeTrades.length === 0" class="text-center py-8">
+        <i class="fas fa-chart-line text-4xl text-gray-600 mb-4"></i>
+        <p class="text-gray-400">No active trades</p>
+        <p class="text-sm text-gray-500 mt-2">Trades will appear here when the bot is active</p>
+    </div>
+    
+    <div x-show="activeTrades.length > 0" class="space-y-4">
+        <template x-for="trade in activeTrades" :key="trade.id">
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="text-white font-medium" x-text="trade.pair">BTC/USDT</h3>
+                        <p class="text-sm text-gray-400" x-text="'Entry: $' + trade.open_rate">Entry: $0.00</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium" :class="trade.profit_pct >= 0 ? 'text-green-400' : 'text-red-400'"
+                           x-text="(trade.profit_pct >= 0 ? '+' : '') + trade.profit_pct.toFixed(2) + '%'">0.00%</p>
+                        <p class="text-xs text-gray-400" x-text="formatDate(trade.open_date)">--</p>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-600 rounded-full h-2">
+                    <div class="h-2 rounded-full" 
+                         :class="trade.profit_pct >= 0 ? 'bg-green-400' : 'bg-red-400'"
+                         :style="'width: ' + Math.min(100, Math.abs(trade.profit_pct) * 10) + '%'"></div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

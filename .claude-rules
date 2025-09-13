@@ -1,0 +1,63 @@
+# FrickTrader Claude Rules
+# Instructions for Claude AI assistant when working on this crypto trading system
+
+## Project Overview
+This is **FrickTrader** - a minimal, focused crypto trading system with:
+- Real-time price monitoring
+- AI trading signal generation  
+- Manual signal approval workflow
+- Clean web dashboard
+- Integration with Freqtrade bot
+
+## Core Principles
+1. **Keep it simple** - Only essential features
+2. **No overwhelming UIs** - Focus on what traders actually need
+3. **Clean architecture** - Easy to understand and maintain
+4. **Real data only** - No mock elements or demos
+
+## Essential Files Only
+```
+src/
+├── strategy_framework.py      # Core strategy system
+├── unified_data_pipeline.py   # Data access layer
+├── web_ui/
+│   ├── app.py                 # Simple Flask app
+│   └── templates/dashboard.html # Single dashboard
+├── approval/
+│   └── manual_approval_manager.py
+├── data/ (Phase 1 infrastructure)
+├── database/ (Phase 1 infrastructure)
+```
+
+## Dashboard Must-Haves ONLY
+1. **Current Prices** - BTC/USDT, ETH/USDT, etc.
+2. **Trading Signals** - Buy/Sell recommendations with confidence
+3. **System Status** - Is everything working?  
+4. **Approval Queue** - Pending signals to approve/reject
+5. **One Simple Chart** - Price movement only
+
+## Dashboard Must-NOT-Haves
+- Complex market depth displays
+- Multiple charts and technical indicators
+- Overwhelming data tables
+- Mock/demo elements
+- Excessive tabs (max 3)
+
+## Code Standards
+- **Type hints required**
+- **Error handling required** 
+- **No hardcoded secrets**
+- **Keep functions small and focused**
+
+## When Making Changes
+1. **Always ask**: "Does this add essential value?"
+2. **Prefer deletion over addition**
+3. **Focus on trader workflow**: Price → Signal → Approve → Trade
+4. **Test with real crypto symbols only**: BTC/USDT, ETH/USDT
+
+## Startup
+- System starts with: `./start_trading_system.sh`
+- Single dashboard at: http://127.0.0.1:5002
+- Freqtrade integration for actual trading
+
+Remember: Traders need **clear, actionable information** - not feature showcases.
